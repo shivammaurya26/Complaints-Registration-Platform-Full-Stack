@@ -31,7 +31,7 @@ app.use(cors({
 
 // Root route for verification
 app.get('/', (req, res) => {
-  res.send('<h1>CrimeReport Backend is Running!</h1><p>Visit <a href="/api/health">/api/health</a> for status.</p>');
+  res.send('<h1>ComplaintHub Backend is Running!</h1><p>Visit <a href="/api/health">/api/health</a> for status.</p>');
 });
 
 app.use(express.json());

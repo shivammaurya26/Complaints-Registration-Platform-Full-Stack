@@ -203,7 +203,7 @@ async function loadAdminComplaints() {
                 </div>
                 <span class="user-info">${c.userName} (${c.userPhone || 'No Phone'})</span>
                 <div class="section">
-                    <span class="label">Complaint Type</span>
+                    <span class="label">Complaint Category</span>
                     <p style="text-transform: capitalize;">${c.category}</p>
                 </div>
                 <div class="section">

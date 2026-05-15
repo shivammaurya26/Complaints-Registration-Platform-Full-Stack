@@ -11,7 +11,7 @@
     <div id="app">
         <nav id="navbar" class="hidden">
             <div class="nav-content">
-                <h1 class="logo">Crime<span>Report</span></h1>
+                <h1 class="logo">Complaint<span>Hub</span></h1>
                 <div class="nav-links">
                     <span id="user-name"></span>
                     <button id="logout-btn" class="btn-secondary">Logout</button>
@@ -23,8 +23,8 @@
             <!-- Public Submission Section -->
             <section id="public-section" class="auth-section">
                 <div class="card glass">
-                    <h2>Police Complaint Portal</h2>
-                    <p>Report a crime or public issue directly to the authorities</p>
+                    <h2>Complaint Registration Form</h2>
+                    <p>Register your complaint directly with our support team</p>
                     
                     <!-- Step 1: Initial Submission -->
                     <div id="public-step-1">
@@ -39,15 +39,14 @@
                             </div>
                             <div class="form-row" style="grid-template-columns: 1fr;">
                                 <div class="input-group">
-                                    <label for="public-category">Complaint Type</label>
+                                    <label for="public-category">Complaint Category</label>
                                     <select id="public-category">
-                                        <option value="theft">Theft / Burglary</option>
-                                        <option value="harassment">Harassment / Violence</option>
-                                        <option value="cybercrime">Cybercrime / Fraud</option>
-                                        <option value="traffic">Traffic Violation</option>
-                                        <option value="missing">Missing Person</option>
-                                        <option value="nuisance">Public Nuisance</option>
-                                        <option value="other">Other Crime</option>
+                                        <option value="service">Service Issue</option>
+                                        <option value="product">Product Defect</option>
+                                        <option value="billing">Billing / Payment</option>
+                                        <option value="technical">Technical Support</option>
+                                        <option value="suggestion">Suggestion / Feedback</option>
+                                        <option value="other">Other</option>
                                     </select>
                                 </div>
                             </div>
@@ -104,8 +103,8 @@
             <section id="admin-dashboard" class="dashboard-section hidden">
                 <div class="container">
                     <div class="dashboard-header">
-                        <h2>Police Control Room</h2>
-                        <p>Managing all reported crimes and public issues</p>
+                        <h2>Admin Dashboard</h2>
+                        <p>Manage and track all registered complaints</p>
                     </div>
                     <div id="admin-complaints-list" class="complaints-grid">
                         <!-- Admin view complaints -->
