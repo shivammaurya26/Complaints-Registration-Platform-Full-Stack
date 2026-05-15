@@ -1,4 +1,6 @@
-const BACKEND_BASE_URL = 'http://127.0.0.1:3000';
+const BACKEND_BASE_URL = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost'
+    ? 'http://127.0.0.1:3000'
+    : 'https://complaints-registration-platform-full-stack.onrender.com';
 const API_URL = `${BACKEND_BASE_URL}/api`;
 
 // --- State Management ---
