@@ -1,4 +1,4 @@
-const BACKEND_BASE_URL = 'http://127.0.0.1:3000';
+const BACKEND_BASE_URL = 'https://complaints-registration-platform-full-g7ge.onrender.com';
 const API_URL = `${BACKEND_BASE_URL}/api`;
 
 // --- State Management ---
@@ -25,7 +25,7 @@ const userNameDisplay = document.getElementById('user-name');
 function showSection(sectionName) {
     Object.values(sections).forEach(s => s.classList.add('hidden'));
     sections[sectionName].classList.remove('hidden');
-    
+
     if (currentUser) {
         navbar.classList.remove('hidden');
         userNameDisplay.textContent = `Hello, ${currentUser.name}`;
@@ -75,7 +75,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
     const errorEl = document.getElementById('login-error');
-    
+
     try {
         currentUser = await apiRequest('/auth/login', 'POST', { email, password });
         if (currentUser.role === 'admin') {
@@ -96,7 +96,7 @@ document.getElementById('otp-form').addEventListener('submit', async (e) => {
     const name = document.getElementById('reg-name').value;
     const email = document.getElementById('reg-email').value;
     const errorEl = document.getElementById('otp-error');
-    
+
     try {
         await apiRequest('/auth/send-otp', 'POST', { name, email });
         document.getElementById('reg-step-1').classList.add('hidden');
@@ -171,7 +171,7 @@ document.getElementById('get-ai-question-btn').addEventListener('click', async (
         const { question } = await apiRequest('/ai/question', 'POST', { complaint_text: text });
         currentComplaint.text = text;
         currentComplaint.aiQuestion = question;
-        
+
         document.getElementById('ai-question-display').textContent = question;
         document.getElementById('complaint-step-1').classList.add('hidden');
         document.getElementById('complaint-step-2').classList.remove('hidden');
@@ -199,7 +199,7 @@ document.getElementById('submit-complaint-btn').addEventListener('click', async 
         alert('Complaint submitted successfully!');
         showSection('userDashboard');
         loadUserComplaints();
-        
+
         // Reset form
         document.getElementById('complaint-text').value = '';
         document.getElementById('ai-answer').value = '';
@@ -214,7 +214,7 @@ document.getElementById('submit-complaint-btn').addEventListener('click', async 
 async function loadUserComplaints() {
     const listEl = document.getElementById('my-complaints-list');
     listEl.innerHTML = '<div class="loading">Loading complaints...</div>';
-    
+
     try {
         const complaints = await apiRequest('/complaints/my');
         if (complaints.length === 0) {
@@ -251,7 +251,7 @@ async function loadUserComplaints() {
 async function loadAdminComplaints() {
     const listEl = document.getElementById('admin-complaints-list');
     listEl.innerHTML = '<div class="loading">Loading all complaints...</div>';
-    
+
     try {
         const complaints = await apiRequest('/admin/complaints');
         if (complaints.length === 0) {
