@@ -1,0 +1,32 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Environment Variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDEs
+.vscode/
+.idea/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Database & Migrations
+Backend/drizzle/
+Backend/test_db.js
+Backend/drizzle.config.json
+
+# Build and Temp
+dist/
+build/
+.temp/
+.cache/
