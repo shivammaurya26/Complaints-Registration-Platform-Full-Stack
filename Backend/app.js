@@ -26,19 +26,23 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
+    // Log origin for debugging in Render logs
+    console.log("[CORS DEBUG] Request from origin:", origin);
+
     if (!origin) return callback(null, true);
     
-    const isLocal = origin.startsWith('http://localhost:') || 
-                    origin.startsWith('http://127.0.0.1:') ||
-                    origin === 'http://localhost' ||
-                    origin === 'http://127.0.0.1';
+    const normalizedOrigin = origin.replace(/\/$/, '');
+    
+    const isLocal = normalizedOrigin.startsWith('http://localhost') || 
+                    normalizedOrigin.startsWith('http://127.0.0.1');
+    
+    const isGitHubPages = normalizedOrigin.includes('.github.io');
 
-    if (isLocal || allowedOrigins.includes(origin) || allowedOrigins.includes(origin.replace(/\/$/, ''))) {
+    if (isLocal || isGitHubPages || allowedOrigins.includes(normalizedOrigin)) {
       callback(null, true);
     } else {
-      console.log("CORS blocked origin:", origin);
-      callback(null, false); // Don't throw error, just don't allow
+      console.log("[CORS DEBUG] Blocked origin:", origin);
+      callback(null, false);
     }
   },
   credentials: true,
@@ -148,8 +152,13 @@ app.post('/api/auth/login', async (req, res) => {
     const userData = user[0];
     const token = jwt.sign({ id: userData.id, email: userData.email, role: userData.role, name: userData.name }, process.env.JWT_SECRET);
 
-    // Cookie settings as requested: not HttpOnly, not Secure, not SameSite Strict for easier testing
-    res.cookie('token', token, { httpOnly: false, secure: false, sameSite: 'lax' });
+    // Cookie settings for production: sameSite='none' and secure=true are REQUIRED for cross-site (GitHub Pages -> Render)
+    res.cookie('token', token, { 
+      httpOnly: false, 
+      secure: true, 
+      sameSite: 'none',
+      path: '/' 
+    });
     res.json({ name: userData.name, email: userData.email, role: userData.role });
   } catch (error) {
     console.error(error);
@@ -159,7 +168,7 @@ app.post('/api/auth/login', async (req, res) => {
 
 // POST /api/auth/logout
 app.post('/api/auth/logout', (req, res) => {
-  res.clearCookie('token');
+  res.clearCookie('token', { secure: true, sameSite: 'none', path: '/' });
   res.json({ message: 'Logged out successfully' });
 });
 
