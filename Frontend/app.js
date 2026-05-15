@@ -13,8 +13,9 @@ let currentComplaint = {
 
 // --- DOM Elements ---
 const sections = {
-    public: document.getElementById('public-section'),
     login: document.getElementById('login-section'),
+    register: document.getElementById('register-section'),
+    public: document.getElementById('public-section'),
     adminDashboard: document.getElementById('admin-dashboard')
 };
 
@@ -28,9 +29,15 @@ function showSection(sectionName) {
     });
     if (sections[sectionName]) sections[sectionName].classList.remove('hidden');
     
-    if (currentUser && currentUser.role === 'admin') {
+    if (currentUser) {
         navbar.classList.remove('hidden');
-        userNameDisplay.textContent = `Admin: ${currentUser.name}`;
+        userNameDisplay.textContent = `${currentUser.role === 'admin' ? 'Admin' : 'User'}: ${currentUser.name}`;
+        
+        // Auto-fill complaint form
+        const nameInput = document.getElementById('public-name');
+        const phoneInput = document.getElementById('public-phone');
+        if (nameInput && !nameInput.value) nameInput.value = currentUser.name;
+        if (phoneInput && !phoneInput.value) phoneInput.value = currentUser.phone || '';
     } else {
         navbar.classList.add('hidden');
     }
@@ -60,16 +67,76 @@ async function checkSession() {
             showSection('adminDashboard');
             loadAdminComplaints();
         } else {
-            // If logged in but not admin (shouldn't happen in this simplified version)
             showSection('public');
         }
     } catch (err) {
         currentUser = null;
-        showSection('public');
+        showSection('login');
     }
 }
 
-// --- Public Actions ---
+// --- Auth Actions ---
+
+// Login
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    const errorEl = document.getElementById('login-error');
+    
+    try {
+        currentUser = await apiRequest('/auth/login', 'POST', { email, password });
+        if (currentUser.role === 'admin') {
+            showSection('adminDashboard');
+            loadAdminComplaints();
+        } else {
+            showSection('public');
+        }
+    } catch (err) {
+        errorEl.textContent = err.message;
+    }
+});
+
+// Register
+document.getElementById('register-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('reg-name').value;
+    const phone = document.getElementById('reg-phone').value;
+    const email = document.getElementById('reg-email').value;
+    const password = document.getElementById('reg-password').value;
+    const errorEl = document.getElementById('reg-error');
+
+    try {
+        await apiRequest('/auth/register', 'POST', { name, phone, email, password });
+        alert('Registration successful! Please login.');
+        showSection('login');
+    } catch (err) {
+        errorEl.textContent = err.message;
+    }
+});
+
+// Logout
+document.getElementById('logout-btn').addEventListener('click', async () => {
+    try {
+        await apiRequest('/auth/logout', 'POST');
+        currentUser = null;
+        showSection('login');
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+// --- Navigation ---
+document.getElementById('go-to-register').addEventListener('click', (e) => {
+    e.preventDefault();
+    showSection('register');
+});
+document.getElementById('go-to-login').addEventListener('click', (e) => {
+    e.preventDefault();
+    showSection('login');
+});
+
+// --- Complaint Actions ---
 let activeComplaintId = null;
 
 // Step 1: Initial Complaint Submission
@@ -136,52 +203,6 @@ document.getElementById('submit-ai-answer-btn').addEventListener('click', async 
         submitBtn.disabled = false;
     }
 });
-
-// --- Admin Actions ---
-
-// Admin Login
-document.getElementById('login-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-    const errorEl = document.getElementById('login-error');
-    
-    try {
-        currentUser = await apiRequest('/auth/login', 'POST', { email, password });
-        if (currentUser.role === 'admin') {
-            showSection('adminDashboard');
-            loadAdminComplaints();
-        } else {
-            showSection('public');
-            alert('Access Denied: Not an admin');
-        }
-    } catch (err) {
-        errorEl.textContent = err.message;
-    }
-});
-
-// Logout
-document.getElementById('logout-btn').addEventListener('click', async () => {
-    try {
-        await apiRequest('/auth/logout', 'POST');
-        currentUser = null;
-        showSection('public');
-    } catch (err) {
-        console.error(err);
-    }
-});
-
-// --- Navigation ---
-document.getElementById('go-to-login').addEventListener('click', (e) => {
-    e.preventDefault();
-    showSection('login');
-});
-document.getElementById('go-to-public').addEventListener('click', (e) => {
-    e.preventDefault();
-    showSection('public');
-});
-
-// --- Complaint Actions ---
 
 // Load Admin Complaints
 async function loadAdminComplaints() {

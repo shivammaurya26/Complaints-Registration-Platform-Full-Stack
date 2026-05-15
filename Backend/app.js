@@ -106,26 +106,26 @@ app.post('/api/auth/send-otp', async (req, res) => {
 
 // POST /api/auth/register
 app.post('/api/auth/register', async (req, res) => {
-  const { email, otp, password } = req.body;
-  if (!email || !otp || !password) return res.status(400).json({ error: 'Missing fields' });
+  const { name, email, phone, password } = req.body;
+  if (!name || !email || !password) {
+    return res.status(400).json({ error: 'Name, email, and password are required' });
+  }
 
   try {
-    const user = await db.select().from(users).where(eq(users.email, email)).limit(1);
-    if (user.length === 0) return res.status(400).json({ error: 'User not found' });
-
-    const userData = user[0];
-    if (userData.otp !== otp || new Date() > userData.otpExpiry) {
-      return res.status(400).json({ error: 'Invalid or expired OTP' });
+    const existingUser = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    if (existingUser.length > 0) {
+      return res.status(400).json({ error: 'Email already registered' });
     }
 
-    await db.update(users).set({
-      password, // Stored as plain text as requested
-      isVerified: true,
-      otp: null,
-      otpExpiry: null,
-    }).where(eq(users.email, email));
+    await db.insert(users).values({
+      name,
+      email,
+      phone,
+      password, // In a real app, hash this!
+      role: 'user',
+    });
 
-    res.json({ message: 'Registration successful' });
+    res.json({ message: 'Registration successful! Please login.' });
   } catch (error) {
     console.error("[DATABASE ERROR]:", error);
     res.status(500).json({ error: 'Database error', details: error.message });
