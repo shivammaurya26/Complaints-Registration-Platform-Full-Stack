@@ -1,0 +1,15 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "Frontend for Complaint Registration Platform",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx live-server . --port=5500"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  }
+}

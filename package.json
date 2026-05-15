@@ -1,0 +1,16 @@
+{
+  "name": "complaint-registration-platform",
+  "version": "1.0.0",
+  "description": "Full stack complaint registration platform",
+  "scripts": {
+    "start:backend": "cd Backend && npm start",
+    "start:frontend": "cd Frontend && npm start",
+    "dev:backend": "cd Backend && npm run dev",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run start:frontend\"",
+    "db:push": "cd Backend && npm run db:push",
+    "db:generate": "cd Backend && npm run db:generate"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
