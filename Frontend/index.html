@@ -34,6 +34,27 @@
                             <label for="public-phone">Mobile Number</label>
                             <input type="tel" id="public-phone" required placeholder="Enter your mobile number">
                         </div>
+                        <div class="form-row">
+                            <div class="input-group">
+                                <label for="public-category">Category</label>
+                                <select id="public-category">
+                                    <option value="general">General</option>
+                                    <option value="service">Service Quality</option>
+                                    <option value="product">Product Issue</option>
+                                    <option value="billing">Billing/Payment</option>
+                                    <option value="technical">Technical Support</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label for="public-priority">Priority</label>
+                                <select id="public-priority">
+                                    <option value="low">Low</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="input-group">
                             <label for="public-complaint">Complaint Details</label>
                             <textarea id="public-complaint" required rows="4" placeholder="Describe your issue in detail..."></textarea>

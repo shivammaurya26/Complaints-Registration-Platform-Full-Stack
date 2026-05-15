@@ -281,3 +281,56 @@ input:focus, textarea:focus {
     border: 2px dashed var(--border);
     border-radius: 1.5rem;
 }
+
+/* Professional Layout & Badges */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+@media (max-width: 600px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    color: var(--text-main);
+    font-family: inherit;
+    cursor: pointer;
+}
+
+select option {
+    background: #1e1b4b;
+    color: white;
+}
+
+.badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+.badge-pending { background: #6366f133; color: #818cf8; border: 1px solid #6366f166; }
+.badge-resolved { background: #10b98133; color: #34d399; border: 1px solid #10b98166; }
+.badge-urgent { background: #ef444433; color: #f87171; border: 1px solid #ef444466; }
+.badge-high { background: #f59e0b33; color: #fbbf24; border: 1px solid #f59e0b66; }
+.badge-medium { background: #6366f133; color: #818cf8; border: 1px solid #6366f166; }
+.badge-low { background: #94a3b833; color: #cbd5e1; border: 1px solid #94a3b866; }
+
+.success-msg {
+    color: var(--success);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    text-align: center;
+}

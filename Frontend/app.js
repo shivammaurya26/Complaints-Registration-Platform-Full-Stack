@@ -76,6 +76,8 @@ document.getElementById('public-complaint-form').addEventListener('submit', asyn
     e.preventDefault();
     const name = document.getElementById('public-name').value;
     const phone = document.getElementById('public-phone').value;
+    const category = document.getElementById('public-category').value;
+    const priority = document.getElementById('public-priority').value;
     const complaint_text = document.getElementById('public-complaint').value;
     const errorEl = document.getElementById('public-error');
     const successEl = document.getElementById('public-success');
@@ -84,7 +86,7 @@ document.getElementById('public-complaint-form').addEventListener('submit', asyn
     successEl.textContent = '';
 
     try {
-        await apiRequest('/complaints/public', 'POST', { name, phone, complaint_text });
+        await apiRequest('/complaints/public', 'POST', { name, phone, category, priority, complaint_text });
         successEl.textContent = "Thank you! Your complaint has been submitted successfully.";
         document.getElementById('public-complaint-form').reset();
     } catch (err) {
@@ -152,14 +154,27 @@ async function loadAdminComplaints() {
 
         listEl.innerHTML = complaints.map(c => `
             <div class="complaint-card glass">
-                <span class="user-info">${c.userName} (${c.userPhone || 'No Phone'})</span>
                 <div class="meta">
                     <span>ID: #${c.id}</span>
-                    <span>${new Date(c.createdAt).toLocaleDateString()}</span>
+                    <span class="badge badge-${c.status}">${c.status}</span>
+                </div>
+                <span class="user-info">${c.userName} (${c.userPhone || 'No Phone'})</span>
+                <div class="form-row">
+                    <div class="section">
+                        <span class="label">Category</span>
+                        <p>${c.category}</p>
+                    </div>
+                    <div class="section">
+                        <span class="label">Priority</span>
+                        <span class="badge badge-${c.priority}">${c.priority}</span>
+                    </div>
                 </div>
                 <div class="section">
                     <span class="label">Complaint Detail</span>
                     <p>${c.complaintText}</p>
+                </div>
+                <div class="meta" style="margin-top: 1rem; margin-bottom: 0;">
+                    <span>${new Date(c.createdAt).toLocaleDateString()} ${new Date(c.createdAt).toLocaleTimeString()}</span>
                 </div>
             </div>
         `).join('');

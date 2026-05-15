@@ -167,7 +167,7 @@ app.post('/api/auth/login', async (req, res) => {
 
 // POST /api/complaints/public (Direct submission without OTP)
 app.post('/api/complaints/public', async (req, res) => {
-  const { name, phone, complaint_text } = req.body;
+  const { name, phone, complaint_text, category, priority } = req.body;
   if (!name || !phone || !complaint_text) {
     return res.status(400).json({ error: 'Name, phone, and complaint text are required' });
   }
@@ -182,7 +182,6 @@ app.post('/api/complaints/public', async (req, res) => {
         name,
         phone,
         role: 'user',
-        isVerified: true
       }).returning({ id: users.id });
       userId = newUser[0].id;
     } else {
@@ -193,6 +192,9 @@ app.post('/api/complaints/public', async (req, res) => {
     await db.insert(complaints).values({
       userId,
       complaintText: complaint_text,
+      category: category || 'general',
+      priority: priority || 'medium',
+      status: 'pending'
     });
 
     res.json({ message: 'Complaint submitted successfully!' });
