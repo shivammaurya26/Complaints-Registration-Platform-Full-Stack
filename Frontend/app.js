@@ -163,7 +163,7 @@ document.getElementById('public-complaint-form').addEventListener('submit', asyn
         document.getElementById('public-step-2').classList.remove('hidden');
     } catch (err) {
         errorEl.textContent = err.message;
-        submitBtn.textContent = 'Continue to Investigation';
+        submitBtn.textContent = 'Submit';
         submitBtn.disabled = false;
     }
 });
