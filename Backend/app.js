@@ -48,6 +48,11 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json());
+
+// GET /api/health
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', message: 'Backend is running' });
+});
 app.use(cookieParser());
 
 // --- Authentication Middleware ---
