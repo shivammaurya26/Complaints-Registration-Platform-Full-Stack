@@ -145,14 +145,13 @@ app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await db.select().from(users).where(eq(users.email, email)).limit(1);
-    if (user.length === 0 || !user[0].isVerified || user[0].password !== password) {
+    if (user.length === 0 || user[0].password !== password) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
     const userData = user[0];
     const token = jwt.sign({ id: userData.id, email: userData.email, role: userData.role, name: userData.name }, process.env.JWT_SECRET);
 
-    // Cookie settings for production: sameSite='none' and secure=true are REQUIRED for cross-site (GitHub Pages -> Render)
     res.cookie('token', token, { 
       httpOnly: false, 
       secure: true, 
@@ -160,6 +159,43 @@ app.post('/api/auth/login', async (req, res) => {
       path: '/' 
     });
     res.json({ name: userData.name, email: userData.email, role: userData.role });
+  } catch (error) {
+    console.error("[DATABASE ERROR]:", error);
+    res.status(500).json({ error: 'Database error', details: error.message });
+  }
+});
+
+// POST /api/complaints/public (Direct submission without OTP)
+app.post('/api/complaints/public', async (req, res) => {
+  const { name, phone, complaint_text } = req.body;
+  if (!name || !phone || !complaint_text) {
+    return res.status(400).json({ error: 'Name, phone, and complaint text are required' });
+  }
+
+  try {
+    // 1. Find or create a user by phone number
+    let user = await db.select().from(users).where(eq(users.phone, phone)).limit(1);
+    let userId;
+
+    if (user.length === 0) {
+      const newUser = await db.insert(users).values({
+        name,
+        phone,
+        role: 'user',
+        isVerified: true
+      }).returning({ id: users.id });
+      userId = newUser[0].id;
+    } else {
+      userId = user[0].id;
+    }
+
+    // 2. Insert the complaint
+    await db.insert(complaints).values({
+      userId,
+      complaintText: complaint_text,
+    });
+
+    res.json({ message: 'Complaint submitted successfully!' });
   } catch (error) {
     console.error("[DATABASE ERROR]:", error);
     res.status(500).json({ error: 'Database error', details: error.message });
@@ -227,6 +263,7 @@ app.get('/api/admin/complaints', authenticateToken, isAdmin, async (req, res) =>
       createdAt: complaints.createdAt,
       userName: users.name,
       userEmail: users.email,
+      userPhone: users.phone, // Include phone number
     })
     .from(complaints)
     .innerJoin(users, eq(complaints.userId, users.id));

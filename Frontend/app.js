@@ -13,10 +13,8 @@ let currentComplaint = {
 
 // --- DOM Elements ---
 const sections = {
+    public: document.getElementById('public-section'),
     login: document.getElementById('login-section'),
-    register: document.getElementById('register-section'),
-    userDashboard: document.getElementById('user-dashboard'),
-    newComplaint: document.getElementById('new-complaint-section'),
     adminDashboard: document.getElementById('admin-dashboard')
 };
 
@@ -25,12 +23,14 @@ const userNameDisplay = document.getElementById('user-name');
 
 // --- Helper Functions ---
 function showSection(sectionName) {
-    Object.values(sections).forEach(s => s.classList.add('hidden'));
-    sections[sectionName].classList.remove('hidden');
+    Object.values(sections).forEach(s => {
+        if (s) s.classList.add('hidden');
+    });
+    if (sections[sectionName]) sections[sectionName].classList.remove('hidden');
     
-    if (currentUser) {
+    if (currentUser && currentUser.role === 'admin') {
         navbar.classList.remove('hidden');
-        userNameDisplay.textContent = `Hello, ${currentUser.name}`;
+        userNameDisplay.textContent = `Admin: ${currentUser.name}`;
     } else {
         navbar.classList.add('hidden');
     }
@@ -60,18 +60,41 @@ async function checkSession() {
             showSection('adminDashboard');
             loadAdminComplaints();
         } else {
-            showSection('userDashboard');
-            loadUserComplaints();
+            // If logged in but not admin (shouldn't happen in this simplified version)
+            showSection('public');
         }
     } catch (err) {
         currentUser = null;
-        showSection('login');
+        showSection('public');
     }
 }
 
-// --- Auth Actions ---
+// --- Public Actions ---
 
-// Login
+// Direct Complaint Submission
+document.getElementById('public-complaint-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('public-name').value;
+    const phone = document.getElementById('public-phone').value;
+    const complaint_text = document.getElementById('public-complaint').value;
+    const errorEl = document.getElementById('public-error');
+    const successEl = document.getElementById('public-success');
+    
+    errorEl.textContent = '';
+    successEl.textContent = '';
+
+    try {
+        await apiRequest('/complaints/public', 'POST', { name, phone, complaint_text });
+        successEl.textContent = "Thank you! Your complaint has been submitted successfully.";
+        document.getElementById('public-complaint-form').reset();
+    } catch (err) {
+        errorEl.textContent = err.message;
+    }
+});
+
+// --- Admin Actions ---
+
+// Admin Login
 document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('login-email').value;
@@ -84,55 +107,9 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
             showSection('adminDashboard');
             loadAdminComplaints();
         } else {
-            showSection('userDashboard');
-            loadUserComplaints();
+            showSection('public');
+            alert('Access Denied: Not an admin');
         }
-    } catch (err) {
-        errorEl.textContent = err.message;
-    }
-});
-
-// Register - Send OTP
-document.getElementById('otp-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const name = document.getElementById('reg-name').value;
-    const email = document.getElementById('reg-email').value;
-    const errorEl = document.getElementById('otp-error');
-    
-    try {
-        await apiRequest('/auth/send-otp', 'POST', { name, email });
-        document.getElementById('reg-step-1').classList.add('hidden');
-        document.getElementById('reg-step-2').classList.remove('hidden');
-    } catch (err) {
-        errorEl.textContent = err.message;
-    }
-});
-
-// Register - Verify OTP
-document.getElementById('verify-otp-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    document.getElementById('reg-step-2').classList.add('hidden');
-    document.getElementById('reg-step-3').classList.remove('hidden');
-});
-
-// Register - Finalize
-document.getElementById('register-final-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('reg-email').value;
-    const otp = document.getElementById('reg-otp').value;
-    const password = document.getElementById('reg-password').value;
-    const confirmPassword = document.getElementById('reg-confirm-password').value;
-    const errorEl = document.getElementById('register-error');
-
-    if (password !== confirmPassword) {
-        errorEl.textContent = "Passwords do not match";
-        return;
-    }
-
-    try {
-        await apiRequest('/auth/register', 'POST', { email, otp, password });
-        alert('Registration successful! Please login.');
-        showSection('login');
     } catch (err) {
         errorEl.textContent = err.message;
     }
@@ -143,111 +120,23 @@ document.getElementById('logout-btn').addEventListener('click', async () => {
     try {
         await apiRequest('/auth/logout', 'POST');
         currentUser = null;
-        showSection('login');
+        showSection('public');
     } catch (err) {
         console.error(err);
     }
 });
 
 // --- Navigation ---
-document.getElementById('go-to-register').addEventListener('click', (e) => {
-    e.preventDefault();
-    showSection('register');
-});
 document.getElementById('go-to-login').addEventListener('click', (e) => {
     e.preventDefault();
     showSection('login');
 });
-document.getElementById('new-complaint-btn').addEventListener('click', () => {
-    showSection('newComplaint');
+document.getElementById('go-to-public').addEventListener('click', (e) => {
+    e.preventDefault();
+    showSection('public');
 });
 
 // --- Complaint Actions ---
-
-// Get AI Question
-document.getElementById('get-ai-question-btn').addEventListener('click', async () => {
-    const text = document.getElementById('complaint-text').value;
-    if (!text) return alert('Please describe your issue');
-
-    try {
-        const { question } = await apiRequest('/ai/question', 'POST', { complaint_text: text });
-        currentComplaint.text = text;
-        currentComplaint.aiQuestion = question;
-        
-        document.getElementById('ai-question-display').textContent = question;
-        document.getElementById('complaint-step-1').classList.add('hidden');
-        document.getElementById('complaint-step-2').classList.remove('hidden');
-    } catch (err) {
-        alert(err.message);
-    }
-});
-
-document.getElementById('back-to-complaint-btn').addEventListener('click', () => {
-    document.getElementById('complaint-step-2').classList.add('hidden');
-    document.getElementById('complaint-step-1').classList.remove('hidden');
-});
-
-// Submit Complaint
-document.getElementById('submit-complaint-btn').addEventListener('click', async () => {
-    const answer = document.getElementById('ai-answer').value;
-    if (!answer) return alert('Please answer the follow-up question');
-
-    try {
-        await apiRequest('/complaints', 'POST', {
-            complaint_text: currentComplaint.text,
-            ai_question: currentComplaint.aiQuestion,
-            ai_answer: answer
-        });
-        alert('Complaint submitted successfully!');
-        showSection('userDashboard');
-        loadUserComplaints();
-        
-        // Reset form
-        document.getElementById('complaint-text').value = '';
-        document.getElementById('ai-answer').value = '';
-        document.getElementById('complaint-step-2').classList.add('hidden');
-        document.getElementById('complaint-step-1').classList.remove('hidden');
-    } catch (err) {
-        alert(err.message);
-    }
-});
-
-// Load User Complaints
-async function loadUserComplaints() {
-    const listEl = document.getElementById('my-complaints-list');
-    listEl.innerHTML = '<div class="loading">Loading complaints...</div>';
-    
-    try {
-        const complaints = await apiRequest('/complaints/my');
-        if (complaints.length === 0) {
-            listEl.innerHTML = '<div class="empty-state">No complaints yet.</div>';
-            return;
-        }
-
-        listEl.innerHTML = complaints.map(c => `
-            <div class="complaint-card glass">
-                <div class="meta">
-                    <span>ID: #${c.id}</span>
-                    <span>${new Date(c.createdAt).toLocaleDateString()}</span>
-                </div>
-                <div class="section">
-                    <span class="label">Complaint</span>
-                    <p>${c.complaintText}</p>
-                </div>
-                <div class="section">
-                    <span class="label">AI Question</span>
-                    <p>${c.aiQuestion}</p>
-                </div>
-                <div class="section">
-                    <span class="label">Your Answer</span>
-                    <p>${c.userAnswer}</p>
-                </div>
-            </div>
-        `).join('');
-    } catch (err) {
-        listEl.innerHTML = `<div class="error-msg">${err.message}</div>`;
-    }
-}
 
 // Load Admin Complaints
 async function loadAdminComplaints() {
@@ -257,28 +146,20 @@ async function loadAdminComplaints() {
     try {
         const complaints = await apiRequest('/admin/complaints');
         if (complaints.length === 0) {
-            listEl.innerHTML = '<div class="empty-state">No complaints found.</div>';
+            listEl.innerHTML = '<div class="empty-state">No complaints found in the database.</div>';
             return;
         }
 
         listEl.innerHTML = complaints.map(c => `
             <div class="complaint-card glass">
-                <span class="user-info">${c.userName} (${c.userEmail})</span>
+                <span class="user-info">${c.userName} (${c.userPhone || 'No Phone'})</span>
                 <div class="meta">
                     <span>ID: #${c.id}</span>
                     <span>${new Date(c.createdAt).toLocaleDateString()}</span>
                 </div>
                 <div class="section">
-                    <span class="label">Complaint</span>
+                    <span class="label">Complaint Detail</span>
                     <p>${c.complaintText}</p>
-                </div>
-                <div class="section">
-                    <span class="label">AI Question</span>
-                    <p>${c.aiQuestion}</p>
-                </div>
-                <div class="section">
-                    <span class="label">User Answer</span>
-                    <p>${c.userAnswer}</p>
                 </div>
             </div>
         `).join('');
@@ -289,3 +170,4 @@ async function loadAdminComplaints() {
 
 // Initialize
 checkSession();
+

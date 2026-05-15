@@ -3,9 +3,10 @@ import { pgTable, serial, text, varchar, timestamp, boolean, integer } from 'dri
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
   name: text('name').notNull(),
-  email: varchar('email', { length: 255 }).notNull().unique(),
-  password: text('password').notNull(), // As requested: plain text
-  role: varchar('role', { length: 20 }).notNull().default('user'), // 'user' or 'admin'
+  phone: varchar('phone', { length: 20 }), // New phone field
+  email: varchar('email', { length: 255 }).unique(), // No longer notNull
+  password: text('password'), // No longer notNull
+  role: varchar('role', { length: 20 }).notNull().default('user'),
   otp: varchar('otp', { length: 6 }),
   otpExpiry: timestamp('otp_expiry'),
   isVerified: boolean('is_verified').default(false),
