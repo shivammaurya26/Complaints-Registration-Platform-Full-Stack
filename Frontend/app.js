@@ -41,20 +41,28 @@ function showSection(sectionName) {
     }
 }
 
-async function apiRequest(endpoint, method = 'GET', body = null) {
+async function apiRequest(endpoint, method = 'GET', body = null, retries = 2) {
     const options = {
         method,
         headers: {
             'Content-Type': 'application/json'
         },
-        credentials: 'include' // Important for cookies
+        credentials: 'include'
     };
     if (body) options.body = JSON.stringify(body);
 
-    const response = await fetch(`${API_URL}${endpoint}`, options);
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Something went wrong');
-    return data;
+    for (let i = 0; i <= retries; i++) {
+        try {
+            const response = await fetch(`${API_URL}${endpoint}`, options);
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Something went wrong');
+            return data;
+        } catch (err) {
+            if (i === retries) throw err;
+            // Wait 3 seconds before retrying (server may be waking up)
+            await new Promise(r => setTimeout(r, 3000));
+        }
+    }
 }
 
 // --- Session Check ---
@@ -81,6 +89,11 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
     const errorEl = document.getElementById('login-error');
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    
+    errorEl.textContent = '';
+    submitBtn.textContent = 'Connecting to server...';
+    submitBtn.disabled = true;
     
     try {
         currentUser = await apiRequest('/auth/login', 'POST', { email, password });
@@ -91,7 +104,12 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
             showSection('public');
         }
     } catch (err) {
-        errorEl.textContent = err.message;
+        errorEl.textContent = err.message === 'Failed to fetch' 
+            ? 'Server is starting up, please try again in 30 seconds.' 
+            : err.message;
+    } finally {
+        submitBtn.textContent = 'Login';
+        submitBtn.disabled = false;
     }
 });
 
