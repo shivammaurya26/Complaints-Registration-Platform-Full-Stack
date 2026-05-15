@@ -14,7 +14,9 @@ export const complaints = pgTable('complaints', {
   id: serial('id').primaryKey(),
   userId: integer('user_id').references(() => users.id),
   complaintText: text('complaint_text').notNull(),
-  status: varchar('status', { length: 20 }).notNull().default('pending'), // pending, in-progress, resolved
+  aiQuestion: text('ai_question'),
+  userAnswer: text('user_answer'),
+  status: varchar('status', { length: 20 }).notNull().default('pending'),
   category: varchar('category', { length: 50 }).default('general'),
   priority: varchar('priority', { length: 20 }).default('medium'),
   createdAt: timestamp('created_at').defaultNow(),

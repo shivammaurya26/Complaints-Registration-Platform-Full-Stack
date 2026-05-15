@@ -70,8 +70,9 @@ async function checkSession() {
 }
 
 // --- Public Actions ---
+let activeComplaintId = null;
 
-// Direct Complaint Submission
+// Step 1: Initial Complaint Submission
 document.getElementById('public-complaint-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = document.getElementById('public-name').value;
@@ -79,17 +80,60 @@ document.getElementById('public-complaint-form').addEventListener('submit', asyn
     const category = document.getElementById('public-category').value;
     const complaint_text = document.getElementById('public-complaint').value;
     const errorEl = document.getElementById('public-error');
-    const successEl = document.getElementById('public-success');
+    const submitBtn = document.getElementById('public-submit-btn');
     
     errorEl.textContent = '';
-    successEl.textContent = '';
+    submitBtn.textContent = 'Generating AI Investigation...';
+    submitBtn.disabled = true;
 
     try {
-        await apiRequest('/complaints/public', 'POST', { name, phone, category, complaint_text });
-        successEl.textContent = "Thank you! Your complaint has been submitted successfully.";
-        document.getElementById('public-complaint-form').reset();
+        const response = await apiRequest('/complaints/public', 'POST', { name, phone, category, complaint_text });
+        activeComplaintId = response.complaintId;
+        
+        // Show Step 2
+        document.getElementById('public-ai-question').textContent = response.aiQuestion;
+        document.getElementById('public-step-1').classList.add('hidden');
+        document.getElementById('public-step-2').classList.remove('hidden');
     } catch (err) {
         errorEl.textContent = err.message;
+        submitBtn.textContent = 'Continue to Investigation';
+        submitBtn.disabled = false;
+    }
+});
+
+// Step 2: AI Answer Submission
+document.getElementById('submit-ai-answer-btn').addEventListener('click', async () => {
+    const answer = document.getElementById('public-ai-answer').value;
+    const errorEl = document.getElementById('ai-error');
+    const successEl = document.getElementById('ai-success');
+    const submitBtn = document.getElementById('submit-ai-answer-btn');
+
+    if (!answer) {
+        errorEl.textContent = "Please provide an answer for the investigation.";
+        return;
+    }
+
+    errorEl.textContent = '';
+    submitBtn.textContent = 'Finalizing Report...';
+    submitBtn.disabled = true;
+
+    try {
+        await apiRequest('/complaints/ai-answer', 'POST', { 
+            complaintId: activeComplaintId, 
+            answer: answer 
+        });
+        
+        successEl.textContent = "Report Finalized! Thank you for your cooperation.";
+        submitBtn.classList.add('hidden');
+        
+        setTimeout(() => {
+            // Reset for next complaint
+            location.reload(); 
+        }, 3000);
+    } catch (err) {
+        errorEl.textContent = err.message;
+        submitBtn.textContent = 'Finalize Report';
+        submitBtn.disabled = false;
     }
 });
 
@@ -166,6 +210,14 @@ async function loadAdminComplaints() {
                     <span class="label">Complaint Detail</span>
                     <p>${c.complaintText}</p>
                 </div>
+                ${c.aiQuestion ? `
+                <div class="ai-box" style="margin-top: 1rem; margin-bottom: 0;">
+                    <span class="label" style="color: var(--primary); font-size: 0.7rem;">AI Investigation Question</span>
+                    <p style="font-style: italic; color: #cbd5e1; font-size: 0.9rem; margin-bottom: 0.5rem;">${c.aiQuestion}</p>
+                    <span class="label" style="color: var(--success); font-size: 0.7rem;">User Answer</span>
+                    <p style="color: white; font-size: 0.95rem;">${c.userAnswer || '<span style="color: #94a3b8;">No answer provided</span>'}</p>
+                </div>
+                ` : ''}
                 <div class="meta" style="margin-top: 1rem; margin-bottom: 0;">
                     <span>${new Date(c.createdAt).toLocaleDateString()} ${new Date(c.createdAt).toLocaleTimeString()}</span>
                 </div>

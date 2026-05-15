@@ -25,37 +25,56 @@
                 <div class="card glass">
                     <h2>Police Complaint Portal</h2>
                     <p>Report a crime or public issue directly to the authorities</p>
-                    <form id="public-complaint-form">
-                        <div class="input-group">
-                            <label for="public-name">Full Name</label>
-                            <input type="text" id="public-name" required placeholder="Enter your full name">
-                        </div>
-                        <div class="input-group">
-                            <label for="public-phone">Mobile Number</label>
-                            <input type="tel" id="public-phone" required placeholder="Enter your mobile number">
-                        </div>
-                        <div class="form-row" style="grid-template-columns: 1fr;">
+                    
+                    <!-- Step 1: Initial Submission -->
+                    <div id="public-step-1">
+                        <form id="public-complaint-form">
                             <div class="input-group">
-                                <label for="public-category">Complaint Type</label>
-                                <select id="public-category">
-                                    <option value="theft">Theft / Burglary</option>
-                                    <option value="harassment">Harassment / Violence</option>
-                                    <option value="cybercrime">Cybercrime / Fraud</option>
-                                    <option value="traffic">Traffic Violation</option>
-                                    <option value="missing">Missing Person</option>
-                                    <option value="nuisance">Public Nuisance</option>
-                                    <option value="other">Other Crime</option>
-                                </select>
+                                <label for="public-name">Full Name</label>
+                                <input type="text" id="public-name" required placeholder="Enter your full name">
                             </div>
+                            <div class="input-group">
+                                <label for="public-phone">Mobile Number</label>
+                                <input type="tel" id="public-phone" required placeholder="Enter your mobile number">
+                            </div>
+                            <div class="form-row" style="grid-template-columns: 1fr;">
+                                <div class="input-group">
+                                    <label for="public-category">Complaint Type</label>
+                                    <select id="public-category">
+                                        <option value="theft">Theft / Burglary</option>
+                                        <option value="harassment">Harassment / Violence</option>
+                                        <option value="cybercrime">Cybercrime / Fraud</option>
+                                        <option value="traffic">Traffic Violation</option>
+                                        <option value="missing">Missing Person</option>
+                                        <option value="nuisance">Public Nuisance</option>
+                                        <option value="other">Other Crime</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="public-complaint">Complaint Details</label>
+                                <textarea id="public-complaint" required rows="4" placeholder="Describe your issue in detail..."></textarea>
+                            </div>
+                            <div id="public-error" class="error-msg"></div>
+                            <button type="submit" class="btn-primary" id="public-submit-btn">Continue to Investigation</button>
+                        </form>
+                    </div>
+
+                    <!-- Step 2: AI Follow-up -->
+                    <div id="public-step-2" class="hidden">
+                        <div class="ai-box">
+                            <label>Investigative Follow-up Question:</label>
+                            <p id="public-ai-question" style="margin-top: 0.5rem; color: white;"></p>
                         </div>
                         <div class="input-group">
-                            <label for="public-complaint">Complaint Details</label>
-                            <textarea id="public-complaint" required rows="4" placeholder="Describe your issue in detail..."></textarea>
+                            <label for="public-ai-answer">Your Detailed Answer</label>
+                            <textarea id="public-ai-answer" rows="4" placeholder="Provide more details for the investigation..."></textarea>
                         </div>
-                        <div id="public-error" class="error-msg"></div>
-                        <div id="public-success" class="success-msg"></div>
-                        <button type="submit" class="btn-primary">Submit Complaint</button>
-                    </form>
+                        <div id="ai-error" class="error-msg"></div>
+                        <div id="ai-success" class="success-msg"></div>
+                        <button id="submit-ai-answer-btn" class="btn-primary">Finalize Report</button>
+                    </div>
+
                     <p class="auth-footer"><a href="#" id="go-to-login">Admin Login</a></p>
                 </div>
             </section>

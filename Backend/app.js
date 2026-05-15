@@ -189,15 +189,47 @@ app.post('/api/complaints/public', async (req, res) => {
     }
 
     // 2. Insert the complaint
-    await db.insert(complaints).values({
+    const insertedComplaint = await db.insert(complaints).values({
       userId,
       complaintText: complaint_text,
-      category: category || 'general',
-      priority: priority || 'medium',
+      category: category || 'other',
       status: 'pending'
-    });
+    }).returning({ id: complaints.id });
 
-    res.json({ message: 'Complaint submitted successfully!' });
+    const complaintId = insertedComplaint[0].id;
+
+    // 3. Generate AI Follow-up Question
+    let aiQuestion = "Could you provide any more details about the incident?";
+    try {
+      const generatedQuestion = await generateFollowUpQuestion(complaint_text);
+      if (generatedQuestion) {
+        aiQuestion = generatedQuestion;
+        // Save the question to the database
+        await db.update(complaints).set({ aiQuestion }).where(eq(complaints.id, complaintId));
+      }
+    } catch (aiError) {
+      console.error("[AI ERROR]:", aiError);
+    }
+
+    res.json({ 
+      message: 'Initial report saved!', 
+      complaintId,
+      aiQuestion 
+    });
+  } catch (error) {
+    console.error("[DATABASE ERROR]:", error);
+    res.status(500).json({ error: 'Database error', details: error.message });
+  }
+});
+
+// POST /api/complaints/ai-answer (Save the user's answer to the AI question)
+app.post('/api/complaints/ai-answer', async (req, res) => {
+  const { complaintId, answer } = req.body;
+  if (!complaintId || !answer) return res.status(400).json({ error: 'Complaint ID and answer are required' });
+
+  try {
+    await db.update(complaints).set({ userAnswer: answer }).where(eq(complaints.id, complaintId));
+    res.json({ message: 'Additional details saved successfully!' });
   } catch (error) {
     console.error("[DATABASE ERROR]:", error);
     res.status(500).json({ error: 'Database error', details: error.message });
