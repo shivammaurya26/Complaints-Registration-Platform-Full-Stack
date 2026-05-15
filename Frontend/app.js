@@ -35,9 +35,7 @@ function showSection(sectionName) {
         
         // Auto-fill complaint form
         const nameInput = document.getElementById('public-name');
-        const phoneInput = document.getElementById('public-phone');
         if (nameInput && !nameInput.value) nameInput.value = currentUser.name;
-        if (phoneInput && !phoneInput.value) phoneInput.value = currentUser.phone || '';
     } else {
         navbar.classList.add('hidden');
     }
@@ -143,8 +141,6 @@ let activeComplaintId = null;
 document.getElementById('public-complaint-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = document.getElementById('public-name').value;
-    const phone = document.getElementById('public-phone').value;
-    const category = document.getElementById('public-category').value;
     const complaint_text = document.getElementById('public-complaint').value;
     const errorEl = document.getElementById('public-error');
     const submitBtn = document.getElementById('public-submit-btn');
@@ -154,7 +150,7 @@ document.getElementById('public-complaint-form').addEventListener('submit', asyn
     submitBtn.disabled = true;
 
     try {
-        const response = await apiRequest('/complaints/public', 'POST', { name, phone, category, complaint_text });
+        const response = await apiRequest('/complaints/public', 'POST', { name, complaint_text });
         activeComplaintId = response.complaintId;
         
         // Show Step 2
