@@ -107,8 +107,8 @@ app.post('/api/auth/send-otp', async (req, res) => {
 
     res.json({ message: 'OTP sent successfully' });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Database error' });
+    console.error("[DATABASE ERROR]:", error);
+    res.status(500).json({ error: 'Database error', details: error.message });
   }
 });
 
@@ -135,8 +135,8 @@ app.post('/api/auth/register', async (req, res) => {
 
     res.json({ message: 'Registration successful' });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Database error' });
+    console.error("[DATABASE ERROR]:", error);
+    res.status(500).json({ error: 'Database error', details: error.message });
   }
 });
 
@@ -161,8 +161,8 @@ app.post('/api/auth/login', async (req, res) => {
     });
     res.json({ name: userData.name, email: userData.email, role: userData.role });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Database error' });
+    console.error("[DATABASE ERROR]:", error);
+    res.status(500).json({ error: 'Database error', details: error.message });
   }
 });
 
@@ -200,8 +200,8 @@ app.post('/api/complaints', authenticateToken, async (req, res) => {
     });
     res.json({ message: 'Complaint submitted successfully' });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Database error' });
+    console.error("[DATABASE ERROR]:", error);
+    res.status(500).json({ error: 'Database error', details: error.message });
   }
 });
 
@@ -211,8 +211,8 @@ app.get('/api/complaints/my', authenticateToken, async (req, res) => {
     const userComplaints = await db.select().from(complaints).where(eq(complaints.userId, req.user.id));
     res.json(userComplaints);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Database error' });
+    console.error("[DATABASE ERROR]:", error);
+    res.status(500).json({ error: 'Database error', details: error.message });
   }
 });
 
@@ -233,8 +233,8 @@ app.get('/api/admin/complaints', authenticateToken, isAdmin, async (req, res) =>
     
     res.json(allComplaints);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Database error' });
+    console.error("[DATABASE ERROR]:", error);
+    res.status(500).json({ error: 'Database error', details: error.message });
   }
 });
 
