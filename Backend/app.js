@@ -25,28 +25,15 @@ const allowedOrigins = [
 ].filter(Boolean);
 
 app.use(cors({
-  origin: function (origin, callback) {
-    // Log origin for debugging in Render logs
-    console.log("[CORS DEBUG] Request from origin:", origin);
-
-    if (!origin) return callback(null, true);
-    
-    const normalizedOrigin = origin.replace(/\/$/, '');
-    
-    const isLocal = normalizedOrigin.startsWith('http://localhost') || 
-                    normalizedOrigin.startsWith('http://127.0.0.1');
-    
-    const isGitHubPages = normalizedOrigin.includes('.github.io');
-
-    if (isLocal || isGitHubPages || allowedOrigins.includes(normalizedOrigin)) {
-      callback(null, true);
-    } else {
-      console.log("[CORS DEBUG] Blocked origin:", origin);
-      callback(null, false);
-    }
-  },
+  origin: true, // Allow all origins temporarily to debug connectivity
   credentials: true,
 }));
+
+// Root route for verification
+app.get('/', (req, res) => {
+  res.send('<h1>CrimeReport Backend is Running!</h1><p>Visit <a href="/api/health">/api/health</a> for status.</p>');
+});
+
 app.use(express.json());
 
 // GET /api/health
